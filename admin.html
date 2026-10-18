@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Ateliê da Jucilene - Gestão Completa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen">
+
+  <!-- TOPO -->
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-30 px-4 py-3 shadow-sm">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-lg">🧶</div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold text-stone-900 leading-tight">Ateliê da Jucilene</h1>
+          <p class="text-[11px] text-stone-500 font-medium">Crochê, Artes & Fios • Painel de Controle</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="#encomendas-secao" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-clipboard-list"></i> <span class="hidden sm:inline">Encomendas</span>
+        </a>
+        <a href="#calculadora-secao" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-calculator"></i> <span class="hidden sm:inline">Calcular Preço</span>
+        </a>
+        <a href="index.html" class="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Loja
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- COLUNA ESQUERDA -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- BLOCO 1: CADASTRAR / EDITAR PEÇA -->
+      <div id="bloco-cadastro" class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
+        <h2 id="titulo-form-produto" class="text-xl font-bold text-stone-900 flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-plus-circle text-amber-800"></i> Cadastrar Nova Peça
+        </h2>
+        <p id="subtitulo-form-produto" class="text-xs text-stone-500 mb-5">Anexe uma ou mais fotos e preencha os dados para exibir na vitrine.</p>
+
+        <div id="box-seletor-modelo" class="mb-5 p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl">
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-bold text-amber-950 flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-700"></i> Modelo Base (Padronizado)
+            </label>
+            <button type="button" onclick="abrirModalModelos()" class="text-[11px] text-amber-800 hover:text-amber-950 underline font-semibold">+ Gerenciar Modelos</button>
+          </div>
+          <select id="select-modelo-padrao" onchange="aplicarModeloPadrao(this.value)" class="w-full px-3 py-2 rounded-lg border border-amber-300 text-xs bg-white outline-none font-medium">
+            <option value="">-- Selecione para preencher automático ou digite abaixo --</option>
+          </select>
+        </div>
+
+        <form id="form-produto" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-stone-700 mb-1">Nome do Modelo *</label>
+            <input type="text" id="nome" required placeholder="Ex: Jogo 6 Porta Copos Ponto Trança" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:border-amber-800 text-sm outline-none">
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="col-span-1">
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-semibold text-stone-700">Categoria *</label>
+                <button type="button" onclick="adicionarNovaCategoriaPrompt()" class="text-[10px] text-amber-800 hover:underline font-bold">+ Nova</button>
+              </div>
+              <select id="categoria" required class="w-full px-2.5 py-2.5 rounded-xl border border-stone-300 text-xs outline-none bg-white">
+                <option value="porta-copos">Porta Copos</option>
+                <option value="passadeiras">Passadeiras de Cozinha</option>
+                <option value="sala">Tapetes de Sala</option>
+                <option value="banheiro">Jogos de Banheiro</option>
+                <option value="infantil">Linha Infantil</option>
+                <option value="mesa">Caminhos de Mesa</option>
+              </select>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-semibold text-stone-700">Preço (R$) *</label>
+                <a href="#calculadora-secao" class="text-[10px] text-emerald-700 hover:underline font-bold">Calc.</a>
+              </div>
+              <input type="number" step="0.01" id="preco" required placeholder="68.00" class="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-sm outline-none font-bold text-amber-950">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1" title="Usado para estimar o frete">Peso (g) *</label>
+              <input type="number" step="10" id="peso_gramas" required value="400" class="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-sm outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Dimensões *</label>
+              <input type="text" id="medidas" required placeholder="Ex: 15 cm ou 1,50 m x 0,40 m" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone-700 mb-1">Tipo de Barbante *</label>
+              <input type="text" id="fio" required placeholder="Ex: Algodão Cru nº 6" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm outline-none">
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200">
+            <input type="checkbox" id="pronta_entrega" class="w-4 h-4 text-amber-800 rounded border-stone-300">
+            <label for="pronta_entrega" class="text-xs font-medium text-stone-800 cursor-pointer">
+              Disponível para <strong class="text-emerald-700">Pronta Entrega</strong> (envio imediato)
+            </label>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-stone-700">Fotos da Peça Real <span id="req-foto">*</span></label>
+              <button type="button" id="btn-limpar-fotos" onclick="limparFotosSelecionadas()" class="hidden text-[11px] text-rose-600 hover:underline font-semibold">Limpar fotos</button>
+            </div>
+            <div id="preview-container" class="hidden grid grid-cols-3 gap-2 mb-3"></div>
+            <div class="border-2 border-dashed border-stone-300 hover:border-amber-800 rounded-xl p-4 text-center cursor-pointer bg-stone-50 transition relative">
+              <input type="file" id="foto-input" accept="image/*" multiple required class="absolute inset-0 opacity-0 cursor-pointer">
+              <div id="placeholder-upload">
+                <i class="fa-solid fa-images text-2xl text-stone-400 mb-1"></i>
+                <p class="text-xs font-medium text-stone-600">Toque para escolher 1 ou mais fotos</p>
+                <p class="text-[10px] text-stone-400">Pode selecionar vários ângulos da peça (JPG/PNG)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button type="button" id="btn-cancelar-edicao" onclick="cancelarEdicao()" class="hidden w-1/3 py-3.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold text-sm rounded-xl transition">Cancelar</button>
+            <button type="submit" id="btn-submit" class="flex-1 py-3.5 bg-amber-900 hover:bg-amber-950 text-white font-semibold text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-cloud-arrow-up" id="icone-btn-submit"></i> <span id="texto-btn-submit">Publicar no Catálogo</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- BLOCO 2: WHATSAPP -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
+        <h2 class="text-base font-bold text-stone-900 mb-1 flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp de Vendas
+        </h2>
+        <p class="text-xs text-stone-500 mb-3">Número para onde os pedidos do catálogo são enviados.</p>
+        <form id="form-config-whats" class="flex gap-2">
+          <input type="text" id="whats-config-input" required placeholder="5517981347056" class="flex-1 px-3.5 py-2 rounded-xl border border-stone-300 text-xs outline-none font-mono">
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow transition">Salvar</button>
+        </form>
+      </div>
+
+      <!-- BLOCO 3: QR CODE & CARTÃO DE VISITA -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
+            <i class="fa-solid fa-qrcode text-amber-800"></i> QR Code & Cartão de Visita
+          </h2>
+          <span class="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">Divulgação</span>
+        </div>
+        <div class="flex gap-2 mb-3">
+          <input type="url" id="input-url-qrcode" class="flex-1 px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-mono">
+          <button type="button" onclick="inicializarQrCode(true)" class="px-3 py-1.5 bg-stone-800 text-white text-xs rounded-xl font-semibold">Gerar</button>
+        </div>
+        <div class="flex flex-col items-center justify-center p-4 bg-stone-50 rounded-xl border border-stone-200 mb-3">
+          <div id="qrcode-box" class="p-2 bg-white rounded-lg shadow-sm"></div>
+          <p class="text-[10px] text-stone-400 mt-2">Aponte a câmera do celular para testar</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <button type="button" onclick="baixarQrCode()" class="py-2 bg-amber-900 hover:bg-amber-950 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Baixar PNG
+          </button>
+          <button type="button" onclick="imprimirPlacaQrCode()" class="py-2 bg-stone-100 hover:bg-stone-200 border text-stone-700 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-print"></i> Plaquinha
+          </button>
+        </div>
+        <button type="button" onclick="imprimirCartoesVisita()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-address-card"></i> Imprimir Cartões de Visita (Folha A4 c/ 8 un.)
+        </button>
+      </div>
+
+    </div>
+
+    <!-- COLUNA DIREITA -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- CALCULADORA DE PRECIFICAÇÃO -->
+      <div id="calculadora-secao" class="bg-white rounded-2xl p-6 shadow-sm border-2 border-amber-200">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-xl font-bold text-stone-900 flex items-center gap-2">
+            <i class="fa-solid fa-calculator text-amber-800"></i> Calculadora de Precificação
+          </h2>
+          <span class="px-2.5 py-1 bg-amber-100 text-amber-900 text-[11px] font-bold rounded-full">Fórmula Profissional</span>
+        </div>
+        <p class="text-xs text-stone-500 mb-5">Calcule o preço justo separando o custo do barbante, o seu salário por hora e o lucro do ateliê.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+            <h3 class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-scale-balanced"></i> 1. Barbante & Embalagem
+            </h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Preço do Cone (R$)</label>
+                <input type="number" step="0.01" id="calc-preco-cone" value="24.00" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Peso do Cone (g)</label>
+                <input type="number" step="1" id="calc-peso-cone" value="400" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Peso da Peça (g)</label>
+                <input type="number" step="1" id="calc-peso-peca" value="200" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-400 bg-amber-50/40 text-xs font-bold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Embalagem (R$)</label>
+                <input type="number" step="0.01" id="calc-embalagem" value="3.00" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+            <h3 class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-clock"></i> 2. Tempo & Margem
+            </h3>
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Valor da sua Hora (R$/h)</label>
+              <input type="number" step="0.50" id="calc-valor-hora" value="16.00" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Horas gastas</label>
+                <input type="number" step="1" min="0" id="calc-horas" value="2" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-400 bg-amber-50/40 text-xs font-bold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Minutos gastos</label>
+                <input type="number" step="5" min="0" max="59" id="calc-minutos" value="0" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-400 bg-amber-50/40 text-xs font-bold">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Custos Fixos (%)</label>
+                <input type="number" step="1" id="calc-indiretos" value="10" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-stone-600 mb-0.5">Lucro Ateliê (%)</label>
+                <input type="number" step="1" id="calc-lucro" value="25" oninput="calcularPrecoArtesanato()" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold bg-white">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 space-y-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center border-b border-amber-200/80 pb-3">
+            <div class="bg-white/80 p-2 rounded-lg"><span class="block text-[10px] text-stone-500">Material + Emb.</span><strong id="res-material" class="text-xs font-bold text-stone-800">R$ 15,00</strong></div>
+            <div class="bg-white/80 p-2 rounded-lg"><span class="block text-[10px] text-stone-500">Seu Salário</span><strong id="res-mao-obra" class="text-xs font-bold text-emerald-800">R$ 32,00</strong></div>
+            <div class="bg-white/80 p-2 rounded-lg"><span class="block text-[10px] text-stone-500">Custos Indiretos</span><strong id="res-indiretos" class="text-xs font-bold text-stone-800">R$ 4,70</strong></div>
+            <div class="bg-white/80 p-2 rounded-lg"><span class="block text-[10px] text-stone-500">Lucro do Ateliê</span><strong id="res-lucro" class="text-xs font-bold text-amber-900">R$ 12,93</strong></div>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+            <div class="flex items-center gap-6">
+              <div><span class="block text-[11px] font-semibold text-emerald-800">Preço Pix (5% OFF):</span><span id="res-preco-pix" class="text-xl font-bold text-emerald-700">R$ 64,63</span></div>
+              <div class="border-l border-amber-300 pl-6"><span class="block text-[11px] font-bold text-amber-950">Preço de Vitrine:</span><span id="res-preco-vitrine" class="text-2xl font-extrabold text-amber-950">R$ 68,00</span></div>
+            </div>
+            <button type="button" onclick="transferirPrecoParaCadastro()" class="w-full sm:w-auto px-4 py-2.5 bg-amber-900 hover:bg-amber-950 text-white text-xs font-bold rounded-xl shadow transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrow-left"></i> Usar Preço e Peso no Cadastro
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PEÇAS CADASTRADAS NA VITRINE -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h2 class="text-xl font-bold text-stone-900">Peças Cadastradas na Vitrine</h2>
+            <p class="text-xs text-stone-500">Edite (lápis azul), pause ou remova produtos da loja.</p>
+          </div>
+          <span id="contador-produtos" class="px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-bold">0 peças</span>
+        </div>
+        <div id="loading" class="py-12 text-center text-stone-400">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+          <p class="text-xs">Carregando catálogo...</p>
+        </div>
+        <div id="lista-produtos" class="space-y-3 hidden"></div>
+        <div id="lista-vazia" class="hidden py-12 text-center text-stone-400">
+          <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+          <p class="text-sm font-medium">Nenhuma peça cadastrada ainda.</p>
+        </div>
+      </div>
+
+      <!-- GESTÃO DE ENCOMENDAS EM ANDAMENTO -->
+      <div id="encomendas-secao" class="bg-white rounded-2xl p-6 shadow-sm border-2 border-emerald-200">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-stone-900 flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-list text-emerald-700"></i> Controle de Encomendas
+            </h2>
+            <p class="text-xs text-stone-500">Organize a fila de produção e prazos de entrega das clientes.</p>
+          </div>
+        </div>
+
+        <form id="form-encomenda" class="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-3 mb-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input type="text" id="enc-cliente" required placeholder="Nome da Cliente *" class="px-3 py-2 rounded-lg border text-xs bg-white">
+            <input type="text" id="enc-cidade" placeholder="Cidade / UF (ex: Barretos/SP)" class="px-3 py-2 rounded-lg border text-xs bg-white">
+            <input type="date" id="enc-prazo" class="px-3 py-2 rounded-lg border text-xs bg-white" title="Data de Entrega">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input type="text" id="enc-descricao" required placeholder="Peça, Medidas e Cores *" class="sm:col-span-2 px-3 py-2 rounded-lg border text-xs bg-white">
+            <input type="number" step="0.01" id="enc-valor" required placeholder="Valor Total (R$) *" class="px-3 py-2 rounded-lg border text-xs bg-white">
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow transition">
+            + Adicionar Encomenda à Fila
+          </button>
+        </form>
+
+        <div id="lista-encomendas" class="space-y-2.5"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL: MODELOS PADRONIZADOS -->
+  <div id="modal-modelos" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-800"></i> Modelos Base Padronizados
+        </h3>
+        <button onclick="fecharModalModelos()" class="text-stone-400 hover:text-stone-700 text-xl font-bold">&times;</button>
+      </div>
+      <form id="form-novo-modelo-padrao" class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-3">
+        <h4 class="text-xs font-bold text-stone-800 uppercase">+ Criar Novo Modelo Base</h4>
+        <input type="text" id="mod-nome" required placeholder="Nome do Modelo Base *" class="w-full px-3 py-1.5 rounded-lg border text-xs bg-white">
+        <div class="grid grid-cols-3 gap-2">
+          <select id="mod-categoria" required class="px-2 py-1.5 rounded-lg border text-xs bg-white"></select>
+          <input type="number" step="0.01" id="mod-preco" required placeholder="Preço (R$) *" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
+          <input type="number" step="10" id="mod-peso" required value="400" placeholder="Peso (g) *" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="mod-medidas" required placeholder="Dimensões (ex: 1,50 m x 0,40 m)" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
+          <input type="text" id="mod-fio" required placeholder="Barbante (ex: Algodão Cru nº 6)" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
+        </div>
+        <button type="submit" class="w-full py-2 bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-lg">Salvar Modelo Base</button>
+      </form>
+      <div>
+        <h4 class="text-xs font-bold text-stone-800 mb-2">Modelos Base Existentes:</h4>
+        <div id="lista-modelos-base" class="space-y-2 max-h-56 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://gibbuatpxedcslvapjjj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_jFydKcLFRqgvcm2t06K_1Q_niAht-D_";
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let categoriasLista = [
+      { nome: 'Porta Copos', slug: 'porta-copos', ordem: 1 },
+      { nome: 'Passadeiras de Cozinha', slug: 'passadeiras', ordem: 2 },
+      { nome: 'Tapetes de Sala', slug: 'sala', ordem: 3 },
+      { nome: 'Jogos de Banheiro', slug: 'banheiro', ordem: 4 },
+      { nome: 'Linha Infantil', slug: 'infantil', ordem: 5 },
+      { nome: 'Caminhos de Mesa', slug: 'mesa', ordem: 6 }
+    ];
+    let modelosPadraoLista = [];
+    let produtosVitrine = [];
+    let arquivosFotosSelecionados = [];
+    let precoVitrineCalculado = 68.00;
+    let produtoEmEdicaoId = null;
+
+    const selectCategoria = document.getElementById('categoria');
+    const selectModeloPadrao = document.getElementById('select-modelo-padrao');
+    const formProduto = document.getElementById('form-produto');
+    const fotoInput = document.getElementById('foto-input');
+    const previewContainer = document.getElementById('preview-container');
+    const btnLimparFotos = document.getElementById('btn-limpar-fotos');
+    const listaProdutos = document.getElementById('lista-produtos');
+    const loading = document.getElementById('loading');
+    const listaVazia = document.getElementById('lista-vazia');
+    const contadorProdutos = document.getElementById('contador-produtos');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    // CALCULADORA
+    function carregarPreferenciasCalculadora() {
+      if (localStorage.getItem('calc_preco_cone')) document.getElementById('calc-preco-cone').value = localStorage.getItem('calc_preco_cone');
+      if (localStorage.getItem('calc_peso_cone')) document.getElementById('calc-peso-cone').value = localStorage.getItem('calc_peso_cone');
+      if (localStorage.getItem('calc_valor_hora')) document.getElementById('calc-valor-hora').value = localStorage.getItem('calc_valor_hora');
+      calcularPrecoArtesanato();
+    }
+
+    window.calcularPrecoArtesanato = () => {
+      const precoCone = parseFloat(document.getElementById('calc-preco-cone').value) || 0;
+      const pesoCone = parseFloat(document.getElementById('calc-peso-cone').value) || 1;
+      const pesoPeca = parseFloat(document.getElementById('calc-peso-peca').value) || 0;
+      const embalagem = parseFloat(document.getElementById('calc-embalagem').value) || 0;
+      const valorHora = parseFloat(document.getElementById('calc-valor-hora').value) || 0;
+      const horas = parseFloat(document.getElementById('calc-horas').value) || 0;
+      const minutos = parseFloat(document.getElementById('calc-minutos').value) || 0;
+      const percIndiretos = parseFloat(document.getElementById('calc-indiretos').value) || 0;
+      const percLucro = parseFloat(document.getElementById('calc-lucro').value) || 0;
+
+      localStorage.setItem('calc_preco_cone', precoCone);
+      localStorage.setItem('calc_peso_cone', pesoCone);
+      localStorage.setItem('calc_valor_hora', valorHora);
+
+      const custoMaterialTotal = ((precoCone / pesoCone) * pesoPeca) + embalagem;
+      const custoMaoDeObra = (horas + (minutos / 60)) * valorHora;
+      const valorIndiretos = (custoMaterialTotal + custoMaoDeObra) * (percIndiretos / 100);
+      const custoTotalPeca = custoMaterialTotal + custoMaoDeObra + valorIndiretos;
+      const valorLucro = custoTotalPeca * (percLucro / 100);
+      const precoPix = custoTotalPeca + valorLucro;
+      precoVitrineCalculado = Math.ceil(precoPix / 0.95);
+
+      const fmt = (v) => `R$ ${v.toFixed(2).replace('.', ',')}`;
+      document.getElementById('res-material').textContent = fmt(custoMaterialTotal);
+      document.getElementById('res-mao-obra').textContent = fmt(custoMaoDeObra);
+      document.getElementById('res-indiretos').textContent = fmt(valorIndiretos);
+      document.getElementById('res-lucro').textContent = fmt(valorLucro);
+      document.getElementById('res-preco-pix').textContent = fmt(precoPix);
+      document.getElementById('res-preco-vitrine').textContent = fmt(precoVitrineCalculado);
+    };
+
+    window.transferirPrecoParaCadastro = () => {
+      const campoPreco = document.getElementById('preco');
+      const campoPeso = document.getElementById('peso_gramas');
+      campoPreco.value = precoVitrineCalculado.toFixed(2);
+      campoPeso.value = document.getElementById('calc-peso-peca').value || 400;
+      document.getElementById('bloco-cadastro').scrollIntoView({ behavior: 'smooth' });
+      campoPreco.classList.add('ring-4', 'ring-amber-500', 'bg-amber-50');
+      setTimeout(() => campoPreco.classList.remove('ring-4', 'ring-amber-500', 'bg-amber-50'), 2000);
+    };
+
+    // CATEGORIAS
+    function popularSelectsCategorias(lista) {
+      const valorAtual = selectCategoria.value;
+      const modCatSelect = document.getElementById('mod-categoria');
+      selectCategoria.innerHTML = '';
+      modCatSelect.innerHTML = '';
+      lista.forEach(cat => {
+        selectCategoria.innerHTML += `<option value="${cat.slug}">${cat.nome}</option>`;
+        modCatSelect.innerHTML += `<option value="${cat.slug}">${cat.nome}</option>`;
+      });
+      if (valorAtual && lista.some(c => c.slug === valorAtual)) selectCategoria.value = valorAtual;
+    }
+
+    async function carregarCategorias() {
+      popularSelectsCategorias(categoriasLista);
+      try {
+        const { data, error } = await db.from('categorias').select('*').order('ordem', { ascending: true });
+        if (!error && data && data.length > 0) {
+          categoriasLista = data;
+          popularSelectsCategorias(categoriasLista);
+        }
+      } catch (err) {}
+    }
+
+    window.adicionarNovaCategoriaPrompt = async () => {
+      const nomeCat = prompt("Digite o nome da nova Categoria:");
+      if (!nomeCat || !nomeCat.trim()) return;
+      const slug = nomeCat.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-');
+      try {
+        const novaCat = { nome: nomeCat.trim(), slug, ordem: categoriasLista.length + 1 };
+        const { error } = await db.from('categorias').insert([novaCat]);
+        if (error) throw error;
+        categoriasLista.push(novaCat);
+        popularSelectsCategorias(categoriasLista);
+        selectCategoria.value = slug;
+      } catch (err) { alert("Erro: " + err.message); }
+    };
+
+    // MODELOS PADRÃO
+    function popularSelectModelos(lista) {
+      selectModeloPadrao.innerHTML = '<option value="">-- Selecione para preencher automático ou digite abaixo --</option>';
+      const listaBaseDiv = document.getElementById('lista-modelos-base');
+      listaBaseDiv.innerHTML = '';
+      lista.forEach(m => {
+        selectModeloPadrao.innerHTML += `<option value="${m.id}">${m.nome} (R$ ${parseFloat(m.preco_sugerido).toFixed(2).replace('.', ',')})</option>`;
+        listaBaseDiv.innerHTML += `
+          <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-stone-200 text-xs">
+            <div>
+              <p class="font-bold text-stone-900">${m.nome}</p>
+              <p class="text-[11px] text-stone-500">${m.medidas_padrao} • ${m.fio_padrao} • R$ ${parseFloat(m.preco_sugerido).toFixed(2).replace('.', ',')}</p>
+            </div>
+            <button onclick="excluirModeloPadrao('${m.id}')" class="text-rose-600 hover:text-rose-800 p-1.5"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+      });
+    }
+
+    async function carregarModelosPadrao() {
+      try {
+        const { data, error } = await db.from('modelos_padrao').select('*').order('nome', { ascending: true });
+        if (!error && data) {
+          modelosPadraoLista = data;
+          popularSelectModelos(modelosPadraoLista);
+        }
+      } catch (err) {}
+    }
+
+    window.aplicarModeloPadrao = (id) => {
+      if (!id) return;
+      const mod = modelosPadraoLista.find(m => String(m.id) === String(id));
+      if (!mod) return;
+      document.getElementById('nome').value = mod.nome;
+      document.getElementById('categoria').value = mod.categoria_slug;
+      document.getElementById('preco').value = mod.preco_sugerido;
+      document.getElementById('peso_gramas').value = mod.peso_padrao || 400;
+      document.getElementById('medidas').value = mod.medidas_padrao;
+      document.getElementById('fio').value = mod.fio_padrao;
+    };
+
+    document.getElementById('form-novo-modelo-padrao').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const novoModelo = {
+        nome: document.getElementById('mod-nome').value.trim(),
+        categoria_slug: document.getElementById('mod-categoria').value,
+        preco_sugerido: parseFloat(document.getElementById('mod-preco').value),
+        medidas_padrao: document.getElementById('mod-medidas').value.trim(),
+        fio_padrao: document.getElementById('mod-fio').value.trim()
+      };
+      try {
+        const { error } = await db.from('modelos_padrao').insert([novoModelo]);
+        if (error) throw error;
+        document.getElementById('form-novo-modelo-padrao').reset();
+        await carregarModelosPadrao();
+      } catch (err) { alert("Erro: " + err.message); }
+    });
+
+    window.excluirModeloPadrao = async (id) => {
+      if (!confirm("Remover este modelo base?")) return;
+      await db.from('modelos_padrao').delete().eq('id', id);
+      carregarModelosPadrao();
+    };
+
+    window.abrirModalModelos = () => document.getElementById('modal-modelos').classList.remove('opacity-0', 'pointer-events-none');
+    window.fecharModalModelos = () => document.getElementById('modal-modelos').classList.add('opacity-0', 'pointer-events-none');
+
+    // FOTOS E PRODUTOS
+    fotoInput.addEventListener('change', (e) => {
+      const novos = Array.from(e.target.files);
+      if (novos.length > 0) {
+        arquivosFotosSelecionados = [...arquivosFotosSelecionados, ...novos];
+        renderizarPreviewsFotos();
+      }
+      fotoInput.value = '';
+    });
+
+    function renderizarPreviewsFotos() {
+      previewContainer.innerHTML = '';
+      if (arquivosFotosSelecionados.length === 0) {
+        previewContainer.classList.add('hidden');
+        btnLimparFotos.classList.add('hidden');
+        return;
+      }
+      previewContainer.classList.remove('hidden');
+      btnLimparFotos.classList.remove('hidden');
+      arquivosFotosSelecionados.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        previewContainer.innerHTML += `
+          <div class="relative rounded-xl overflow-hidden border border-stone-300 aspect-square bg-stone-100">
+            <img src="${url}" class="w-full h-full object-cover">
+            ${index === 0 ? '<span class="absolute bottom-1 left-1 bg-amber-900/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Capa</span>' : ''}
+            <button type="button" onclick="removerFotoPreview(${index})" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-600 text-white text-xs flex items-center justify-center shadow">&times;</button>
+          </div>`;
+      });
+    }
+
+    window.removerFotoPreview = (i) => { arquivosFotosSelecionados.splice(i, 1); renderizarPreviewsFotos(); };
+    window.limparFotosSelecionadas = () => { arquivosFotosSelecionados = []; renderizarPreviewsFotos(); };
+
+    window.editarProduto = (id) => {
+      const prod = produtosVitrine.find(p => p.id === id);
+      if (!prod) return;
+      produtoEmEdicaoId = id;
+      document.getElementById('nome').value = prod.nome;
+      document.getElementById('categoria').value = prod.categoria;
+      document.getElementById('preco').value = prod.preco;
+      document.getElementById('peso_gramas').value = prod.peso_gramas || 400;
+      document.getElementById('medidas').value = prod.medidas;
+      document.getElementById('fio').value = prod.fio;
+      document.getElementById('pronta_entrega').checked = !!prod.pronta_entrega;
+
+      document.getElementById('box-seletor-modelo').classList.add('hidden');
+      fotoInput.removeAttribute('required');
+      document.getElementById('req-foto').classList.add('hidden');
+      document.getElementById('placeholder-upload').innerHTML = `
+        <i class="fa-solid fa-image text-2xl text-amber-700 mb-1"></i>
+        <p class="text-xs font-bold text-stone-700">Fotos atuais mantidas</p>
+        <p class="text-[10px] text-stone-400">Só selecione novas fotos se quiser substituir as atuais.</p>`;
+
+      document.getElementById('titulo-form-produto').innerHTML = `<i class="fa-solid fa-pen text-sky-700"></i> Editando Peça`;
+      document.getElementById('texto-btn-submit').textContent = "Salvar Alterações";
+      document.getElementById('icone-btn-submit').className = "fa-solid fa-check";
+      document.getElementById('btn-cancelar-edicao').classList.remove('hidden');
+      document.getElementById('bloco-cadastro').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.cancelarEdicao = () => {
+      produtoEmEdicaoId = null;
+      formProduto.reset();
+      limparFotosSelecionadas();
+      document.getElementById('box-seletor-modelo').classList.remove('hidden');
+      fotoInput.setAttribute('required', 'required');
+      document.getElementById('req-foto').classList.remove('hidden');
+      document.getElementById('placeholder-upload').innerHTML = `
+        <i class="fa-solid fa-images text-2xl text-stone-400 mb-1"></i>
+        <p class="text-xs font-medium text-stone-600">Toque para escolher 1 ou mais fotos</p>
+        <p class="text-[10px] text-stone-400">Pode selecionar vários ângulos da peça (JPG/PNG)</p>`;
+      document.getElementById('titulo-form-produto').innerHTML = `<i class="fa-solid fa-plus-circle text-amber-800"></i> Cadastrar Nova Peça`;
+      document.getElementById('texto-btn-submit').textContent = "Publicar no Catálogo";
+      document.getElementById('icone-btn-submit').className = "fa-solid fa-cloud-arrow-up";
+      document.getElementById('btn-cancelar-edicao').classList.add('hidden');
+    };
+
+    formProduto.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isEditando = produtoEmEdicaoId !== null;
+      if (!isEditando && arquivosFotosSelecionados.length === 0) {
+        alert("Selecione pelo menos 1 foto da peça.");
+        return;
+      }
+      btnSubmit.disabled = true;
+      document.getElementById('texto-btn-submit').textContent = "Salvando...";
+
+      try {
+        let urlsPublicas = [];
+        for (let i = 0; i < arquivosFotosSelecionados.length; i++) {
+          const file = arquivosFotosSelecionados[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+          const { error: upErr } = await db.storage.from('fotos-tapetes').upload(fileName, file);
+          if (upErr) throw new Error("Erro no upload: " + upErr.message);
+          const { data: pubUrl } = db.storage.from('fotos-tapetes').getPublicUrl(fileName);
+          urlsPublicas.push(pubUrl.publicUrl);
+        }
+
+        const payload = {
+          nome: document.getElementById('nome').value,
+          categoria: document.getElementById('categoria').value,
+          preco: parseFloat(document.getElementById('preco').value),
+          medidas: document.getElementById('medidas').value,
+          fio: document.getElementById('fio').value,
+          pronta_entrega: document.getElementById('pronta_entrega').checked
+        };
+
+        if (urlsPublicas.length > 0) {
+          payload.imagem_url = urlsPublicas[0];
+          payload.imagens_urls = urlsPublicas;
+        }
+
+        if (isEditando) {
+          const { error } = await db.from('produtos').update(payload).eq('id', produtoEmEdicaoId);
+          if (error) throw error;
+          alert("Peça atualizada com sucesso!");
+        } else {
+          payload.ativo = true;
+          const { error } = await db.from('produtos').insert([payload]);
+          if (error) throw error;
+          alert("Peça publicada com sucesso!");
+        }
+        cancelarEdicao();
+        carregarProdutos();
+      } catch (err) {
+        alert("Erro: " + err.message);
+      } finally {
+        btnSubmit.disabled = false;
+        document.getElementById('texto-btn-submit').textContent = isEditando ? "Salvar Alterações" : "Publicar no Catálogo";
+      }
+    });
+
+    async function carregarProdutos() {
+      loading.classList.remove('hidden');
+      listaProdutos.classList.add('hidden');
+      listaVazia.classList.add('hidden');
+
+      const { data, error } = await db.from('produtos').select('*').order('created_at', { ascending: false });
+      loading.classList.add('hidden');
+      if (error) return;
+
+      produtosVitrine = data || [];
+      contadorProdutos.textContent = `${produtosVitrine.length} peças`;
+      if (produtosVitrine.length === 0) {
+        listaVazia.classList.remove('hidden');
+        return;
+      }
+
+      listaProdutos.innerHTML = '';
+      listaProdutos.classList.remove('hidden');
+      produtosVitrine.forEach(item => {
+        const qtdFotos = (item.imagens_urls && item.imagens_urls.length > 0) ? item.imagens_urls.length : 1;
+        listaProdutos.innerHTML += `
+          <div class="flex items-center gap-4 p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl transition">
+            <div class="relative w-16 h-16 flex-shrink-0">
+              <img src="${item.imagem_url}" class="w-16 h-16 rounded-lg object-cover border border-stone-200">
+              <span class="absolute -bottom-1 -right-1 bg-stone-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">📷 ${qtdFotos}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h4 class="font-bold text-stone-900 text-sm truncate">${item.nome}</h4>
+                <button onclick="alternarProntaEntrega('${item.id}', ${!!item.pronta_entrega})" title="Clique para alternar Pronta Entrega / Sob Encomenda"
+                  class="px-2 py-0.5 text-[10px] rounded-full font-bold transition ${item.pronta_entrega ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'}">
+                  ${item.pronta_entrega ? '⚡ Pronta Entrega' : '🧵 Sob Encomenda'}
+                </button>
+                ${!item.ativo ? '<span class="px-2 py-0.5 text-[10px] bg-rose-100 text-rose-700 rounded-full font-bold">Oculto</span>' : ''}
+              </div>
+              <p class="text-xs text-stone-500">${item.medidas} • ${item.fio}</p>
+              <p class="text-sm font-bold text-amber-900 mt-0.5">R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="editarProduto('${item.id}')" title="Editar Peça" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs bg-sky-100 text-sky-800 hover:bg-sky-200"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="alternarStatus('${item.id}', ${item.ativo})" title="${item.ativo ? 'Ocultar' : 'Mostrar'}" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs ${item.ativo ? 'bg-amber-100 text-amber-900' : 'bg-stone-200 text-stone-600'}"><i class="fa-solid ${item.ativo ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+              <button onclick="excluirProduto('${item.id}')" title="Excluir" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs bg-rose-50 text-rose-700 hover:bg-rose-100"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>`;
+      });
+    }
+
+    // Alterna Pronta Entrega com 1 clique direto na etiqueta!
+    window.alternarProntaEntrega = async (id, atual) => {
+      const { error } = await db.from('produtos').update({ pronta_entrega: !atual }).eq('id', id);
+      if (error) alert("Erro: " + error.message);
+      else carregarProdutos();
+    };
+
+    window.alternarStatus = async (id, statusAtual) => {
+      await db.from('produtos').update({ ativo: !statusAtual }).eq('id', id);
+      carregarProdutos();
+    };
+
+    window.excluirProduto = async (id) => {
+      if (!confirm("Remover esta peça da loja?")) return;
+      await db.from('produtos').delete().eq('id', id);
+      carregarProdutos();
+    };
+
+    // ENCOMENDAS (SUPABASE + FALLBACK LOCALSTORAGE)
+    async function carregarEncomendas() {
+      const container = document.getElementById('lista-encomendas');
+      let lista = [];
+      try {
+        const { data, error } = await db.from('encomendas').select('*').order('created_at', { ascending: false });
+        if (!error && data) lista = data;
+        else lista = JSON.parse(localStorage.getItem('encomendas_backup') || '[]');
+      } catch (e) {
+        lista = JSON.parse(localStorage.getItem('encomendas_backup') || '[]');
+      }
+
+      if (lista.length === 0) {
+        container.innerHTML = `<p class="text-center text-xs text-stone-400 py-4">Nenhuma encomenda pendente na fila.</p>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      lista.forEach(enc => {
+        const corStatus = enc.status === 'Entregue' ? 'bg-emerald-100 text-emerald-800' : (enc.status === 'Em Produção' ? 'bg-amber-100 text-amber-900' : 'bg-sky-100 text-sky-800');
+        container.innerHTML += `
+          <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-xs text-stone-900">${enc.cliente}</span>
+                ${enc.cidade ? `<span class="text-[10px] text-stone-500">(${enc.cidade})</span>` : ''}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${corStatus}">${enc.status || 'Na Fila'}</span>
+              </div>
+              <p class="text-xs text-stone-600 truncate mt-0.5">${enc.descricao}</p>
+              <p class="text-xs font-bold text-amber-900 mt-0.5">R$ ${parseFloat(enc.valor || 0).toFixed(2).replace('.', ',')} ${enc.prazo ? `• Entrega: ${enc.prazo.split('-').reverse().join('/')}` : ''}</p>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="mudarStatusEncomenda('${enc.id}', '${enc.status}')" title="Avançar Status" class="px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-[11px] font-semibold hover:bg-stone-100">Status</button>
+              <button onclick="excluirEncomenda('${enc.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>`;
+      });
+    }
+
+    document.getElementById('form-encomenda').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nova = {
+        cliente: document.getElementById('enc-cliente').value.trim(),
+        cidade: document.getElementById('enc-cidade').value.trim(),
+        prazo: document.getElementById('enc-prazo').value || null,
+        descricao: document.getElementById('enc-descricao').value.trim(),
+        valor: parseFloat(document.getElementById('enc-valor').value) || 0,
+        status: 'Na Fila'
+      };
+      try {
+        const { error } = await db.from('encomendas').insert([nova]);
+        if (error) throw error;
+      } catch (err) {
+        nova.id = String(Date.now());
+        const bkp = JSON.parse(localStorage.getItem('encomendas_backup') || '[]');
+        bkp.unshift(nova);
+        localStorage.setItem('encomendas_backup', JSON.stringify(bkp));
+      }
+      document.getElementById('form-encomenda').reset();
+      carregarEncomendas();
+    });
+
+    window.mudarStatusEncomenda = async (id, atual) => {
+      const ordem = ['Na Fila', 'Em Produção', 'Pronto p/ Envio', 'Entregue'];
+      const prox = ordem[(ordem.indexOf(atual) + 1) % ordem.length];
+      try {
+        const { error } = await db.from('encomendas').update({ status: prox }).eq('id', id);
+        if (error) throw error;
+      } catch (e) {
+        const bkp = JSON.parse(localStorage.getItem('encomendas_backup') || '[]');
+        const item = bkp.find(x => String(x.id) === String(id));
+        if (item) item.status = prox;
+        localStorage.setItem('encomendas_backup', JSON.stringify(bkp));
+      }
+      carregarEncomendas();
+    };
+
+    window.excluirEncomenda = async (id) => {
+      if (!confirm("Excluir esta encomenda?")) return;
+      try { await db.from('encomendas').delete().eq('id', id); } catch (e) {}
+      const bkp = JSON.parse(localStorage.getItem('encomendas_backup') || '[]').filter(x => String(x.id) !== String(id));
+      localStorage.setItem('encomendas_backup', JSON.stringify(bkp));
+      carregarEncomendas();
+    };
+
+    // WHATSAPP E QR CODE + CARTÕES DE VISITA
+    async function carregarConfigWhats() {
+      try {
+        const { data } = await db.from('configuracoes').select('valor').eq('chave', 'whatsapp').maybeSingle();
+        document.getElementById('whats-config-input').value = (data && data.valor) ? data.valor : "5517981347056";
+      } catch (e) {}
+    }
+
+    document.getElementById('form-config-whats').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const novoNum = document.getElementById('whats-config-input').value.replace(/\D/g, '').trim();
+      await db.from('configuracoes').upsert({ chave: 'whatsapp', valor: novoNum });
+      alert("WhatsApp atualizado com sucesso!");
+    });
+
+    window.inicializarQrCode = (manterInput = false) => {
+      const box = document.getElementById('qrcode-box');
+      const input = document.getElementById('input-url-qrcode');
+      if (!manterInput || !input.value) {
+        input.value = "https://carlosgasparetto.github.io/AtelieJucilene/";
+      }
+      box.innerHTML = '';
+      try {
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(box, { text: input.value.trim(), width: 150, height: 150, colorDark: "#292524", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+        } else {
+          box.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(input.value.trim())}" class="w-36 h-36">`;
+        }
+      } catch (e) {
+        box.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(input.value.trim())}" class="w-36 h-36">`;
+      }
+    };
+
+    function obterImagemQrCode() {
+      const img = document.querySelector('#qrcode-box img');
+      const canvas = document.querySelector('#qrcode-box canvas');
+      if (canvas) return canvas.toDataURL("image/png");
+      if (img && img.src) return img.src;
+      const url = document.getElementById('input-url-qrcode').value.trim();
+      return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+    }
+
+    window.baixarQrCode = () => {
+      const a = document.createElement('a');
+      a.href = obterImagemQrCode();
+      a.download = "qrcode-atelie-jucilene.png";
+      a.click();
+    };
+
+    window.imprimirPlacaQrCode = () => {
+      const imgSrc = obterImagemQrCode();
+      const janela = window.open('', '_blank');
+      janela.document.write(`
+        <html><body onload="window.print()" style="font-family:sans-serif; text-align:center; padding:40px;">
+          <div style="border:3px double #7E3F21; border-radius:24px; padding:30px; max-width:350px; margin:auto;">
+            <div style="font-size:32px;">🧶</div>
+            <h1 style="color:#542612; font-size:24px; margin:5px 0;">Ateliê da Jucilene</h1>
+            <p style="color:#8A7B66; font-size:12px; text-transform:uppercase; margin-bottom:20px;">Crochê, Artes & Fios</p>
+            <img src="${imgSrc}" style="width:180px; height:180px; border-radius:12px;">
+            <p style="font-size:13px; color:#444; margin-top:15px;">Aponte a câmera do celular para ver nosso catálogo e encomendar!</p>
+          </div>
+        </body></html>`);
+      janela.document.close();
+    };
+
+    window.imprimirCartoesVisita = () => {
+      const imgSrc = obterImagemQrCode();
+      const whats = document.getElementById('whats-config-input').value || "5517981347056";
+      const whatsFormatado = whats.replace(/^55(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+      const janela = window.open('', '_blank');
+      const cardHtml = `
+        <div class="card">
+          <div class="esq">
+            <div class="logo">🧶 Ateliê da Jucilene</div>
+            <div class="sub">Crochê, Artes & Fios</div>
+            <div class="desc">Tapetes, passadeiras, caminhos de mesa e peças sob medida 100% feitas à mão.</div>
+            <div class="whats">📱 WhatsApp: ${whatsFormatado}</div>
+            <div class="envio">📦 Enviamos para todo o Brasil • 5% OFF no Pix</div>
+          </div>
+          <div class="dir">
+            <img src="${imgSrc}">
+            <span>Veja o Catálogo</span>
+          </div>
+        </div>`;
+      janela.document.write(`
+        <html><head><title>Cartões de Visita - Ateliê da Jucilene</title>
+        <style>
+          @page { size: A4; margin: 10mm; }
+          body { font-family: sans-serif; margin: 0; background: #fff; }
+          .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+          .card { border: 1px dashed #bfa896; border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between; background: #FAF8F5; height: 48mm; box-sizing: border-box; }
+          .esq { flex: 1; padding-right: 10px; }
+          .logo { font-family: serif; font-size: 17px; font-weight: bold; color: #542612; }
+          .sub { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #9B5430; margin-bottom: 8px; font-weight: bold; }
+          .desc { font-size: 10px; color: #444; line-height: 1.35; margin-bottom: 8px; }
+          .whats { font-size: 11px; font-weight: bold; color: #047857; }
+          .envio { font-size: 8.5px; color: #666; margin-top: 4px; }
+          .dir { text-align: center; background: #fff; padding: 6px; border-radius: 8px; border: 1px solid #e5e0d8; }
+          .dir img { width: 78px; height: 78px; display: block; }
+          .dir span { font-size: 8px; font-weight: bold; color: #542612; display: block; margin-top: 3px; text-transform: uppercase; }
+        </style></head>
+        <body onload="setTimeout(() => window.print(), 500)">
+          <div class="grade">${cardHtml.repeat(8)}</div>
+        </body></html>`);
+      janela.document.close();
+    };
+
+    carregarPreferenciasCalculadora();
+    carregarCategorias();
+    carregarModelosPadrao();
+    carregarConfigWhats();
+    carregarProdutos();
+    carregarEncomendas();
+    setTimeout(() => inicializarQrCode(false), 300);
+  </script>
+</body>
+</html>
