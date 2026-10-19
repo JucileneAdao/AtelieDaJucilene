@@ -153,6 +153,21 @@
         </form>
       </div>
 
+      <!-- BLOCO 2.5: ALTERAR SENHA DO PAINEL -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
+        <h2 class="text-base font-bold text-stone-900 mb-1 flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-800"></i> Senha de Acesso ao Painel
+        </h2>
+        <p class="text-xs text-stone-500 mb-3">Altere a senha de segurança para entrar no painel restrito.</p>
+        <form id="form-config-senha" class="space-y-3">
+          <input type="password" id="senha-atual" required placeholder="Senha Atual" class="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs outline-none">
+          <div class="flex gap-2">
+            <input type="password" id="senha-nova" required placeholder="Nova Senha" class="flex-1 px-3.5 py-2 rounded-xl border border-stone-300 text-xs outline-none">
+            <button type="submit" class="px-4 py-2 bg-amber-900 hover:bg-amber-950 text-white font-semibold text-xs rounded-xl shadow transition">Atualizar</button>
+          </div>
+        </form>
+      </div>
+
       <!-- BLOCO 3: QR CODE & CARTÃO DE VISITA -->
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
         <div class="flex items-center justify-between mb-2">
@@ -341,7 +356,7 @@
         <div class="grid grid-cols-3 gap-2">
           <select id="mod-categoria" required class="px-2 py-1.5 rounded-lg border text-xs bg-white"></select>
           <input type="number" step="0.01" id="mod-preco" required placeholder="Preço (R$) *" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
-          <input type="number" step="10" id="mod-peso" required value="400" placeholder="Peso (g) *" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
+          <input type="number" step="1" id="mod-peso" required value="400" placeholder="Peso (g) *" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <input type="text" id="mod-medidas" required placeholder="Dimensões (ex: 1,50 m x 0,40 m)" class="px-3 py-1.5 rounded-lg border text-xs bg-white">
@@ -386,6 +401,50 @@
     const listaVazia = document.getElementById('lista-vazia');
     const contadorProdutos = document.getElementById('contador-produtos');
     const btnSubmit = document.getElementById('btn-submit');
+
+    // SEGURANÇA: VALIDAÇÃO DE SENHA NO SUPABASE
+    window.acessarPainelRestrito = async () => {
+      let senhaInformada = prompt("Área Restrita do Ateliê da Jucilene.\nDigite a senha de acesso:");
+      if (senhaInformada === null) return;
+
+      try {
+        const { data } = await db.from('configuracoes').select('valor').eq('chave', 'senha_painel').maybeSingle();
+        const senhaCadastrada = (data && data.valor) ? data.valor : "1234";
+
+        if (senhaInformada === senhaCadastrada) {
+          window.location.href = "admin.html";
+        } else {
+          alert("Senha incorreta!");
+        }
+      } catch (e) {
+        if (senhaInformada === "1234") window.location.href = "admin.html";
+        else alert("Senha incorreta!");
+      }
+    };
+
+    document.getElementById('form-config-senha').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const senhaAtual = document.getElementById('senha-atual').value.trim();
+      const senhaNova = document.getElementById('senha-nova').value.trim();
+
+      try {
+        const { data } = await db.from('configuracoes').select('valor').eq('chave', 'senha_painel').maybeSingle();
+        const senhaCadastrada = (data && data.valor) ? data.valor : "1234";
+
+        if (senhaAtual !== senhaCadastrada) {
+          alert("A senha atual informada está incorreta.");
+          return;
+        }
+
+        const { error } = await db.from('configuracoes').upsert({ chave: 'senha_painel', valor: senhaNova });
+        if (error) throw error;
+
+        alert("Senha alterada com sucesso!");
+        document.getElementById('form-config-senha').reset();
+      } catch (err) {
+        alert("Erro ao alterar senha: " + err.message);
+      }
+    });
 
     // CALCULADORA
     function carregarPreferenciasCalculadora() {
@@ -640,15 +699,15 @@
           urlsPublicas.push(pubUrl.publicUrl);
         }
 
-       const payload = {
+        const payload = {
           nome: document.getElementById('nome').value,
           categoria: document.getElementById('categoria').value,
           preco: parseFloat(document.getElementById('preco').value),
-          peso_gramas: parseInt(document.getElementById('peso_gramas').value) || 400, // <--- ADICIONE ESTA LINHA AQUI
+          peso_gramas: parseInt(document.getElementById('peso_gramas').value) || 400,
           medidas: document.getElementById('medidas').value,
           fio: document.getElementById('fio').value,
           pronta_entrega: document.getElementById('pronta_entrega').checked
-       };
+        };
 
         if (urlsPublicas.length > 0) {
           payload.imagem_url = urlsPublicas[0];
@@ -722,7 +781,6 @@
       });
     }
 
-    // Alterna Pronta Entrega com 1 clique direto na etiqueta!
     window.alternarProntaEntrega = async (id, atual) => {
       const { error } = await db.from('produtos').update({ pronta_entrega: !atual }).eq('id', id);
       if (error) alert("Erro: " + error.message);
@@ -740,7 +798,7 @@
       carregarProdutos();
     };
 
-    // ENCOMENDAS (SUPABASE + FALLBACK LOCALSTORAGE)
+    // ENCOMENDAS
     async function carregarEncomendas() {
       const container = document.getElementById('lista-encomendas');
       let lista = [];
@@ -938,7 +996,7 @@
     carregarConfigWhats();
     carregarProdutos();
     carregarEncomendas();
-    setTimeout(() => inicializarQrCode(false), 300);
+    setTimeout(() => initializeQrCode(false), 300);
   </script>
 </body>
 </html>
