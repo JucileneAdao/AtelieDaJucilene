@@ -640,14 +640,15 @@
           urlsPublicas.push(pubUrl.publicUrl);
         }
 
-        const payload = {
+       const payload = {
           nome: document.getElementById('nome').value,
           categoria: document.getElementById('categoria').value,
           preco: parseFloat(document.getElementById('preco').value),
+          peso_gramas: parseInt(document.getElementById('peso_gramas').value) || 400, // <--- ADICIONE ESTA LINHA AQUI
           medidas: document.getElementById('medidas').value,
           fio: document.getElementById('fio').value,
           pronta_entrega: document.getElementById('pronta_entrega').checked
-        };
+       };
 
         if (urlsPublicas.length > 0) {
           payload.imagem_url = urlsPublicas[0];
