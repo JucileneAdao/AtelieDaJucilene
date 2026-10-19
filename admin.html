@@ -141,7 +141,7 @@
         </form>
       </div>
 
-      <!-- BLOCO 2: WHATSAPP -->
+      <!-- BLOCO 2: WHATSAPP DE VENDAS -->
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
         <h2 class="text-base font-bold text-stone-900 mb-1 flex items-center gap-2">
           <i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp de Vendas
@@ -883,7 +883,7 @@
       carregarEncomendas();
     };
 
-    // WHATSAPP E QR CODE + CARTÕES DE VISITA
+    // WHATSAPP E CONFIGURAÇÕES
     async function carregarConfigWhats() {
       try {
         const { data } = await db.from('configuracoes').select('valor').eq('chave', 'whatsapp').maybeSingle();
@@ -996,7 +996,7 @@
     carregarConfigWhats();
     carregarProdutos();
     carregarEncomendas();
-    setTimeout(() => initializeQrCode(false), 300);
+    setTimeout(() => inicializarQrCode(false), 300);
   </script>
 </body>
 </html>
